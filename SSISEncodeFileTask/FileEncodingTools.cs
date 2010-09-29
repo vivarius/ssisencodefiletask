@@ -15,6 +15,9 @@ namespace SSISEncodeFileTask100
         #endregion
 
         #region Encoding List
+        /// <summary>
+        /// All these encodings are listed here: http://msdn.microsoft.com/en-us/library/system.text.encodinginfo.getencoding%28v=VS.90%29.aspx
+        /// </summary>
         public static List<string[]> EncodingList = new List<string[]>
                                                         {
                                                             new [] { "37","IBM037","IBM EBCDIC (US-Canada)"},
@@ -161,6 +164,7 @@ namespace SSISEncodeFileTask100
         #endregion
 
         #region .ctor
+        //initialize some private variables
         public FileEncodingTools(string filePath, int destinationEncoding)
         {
             _filePath = filePath;
@@ -169,6 +173,11 @@ namespace SSISEncodeFileTask100
         #endregion
 
         #region Methods
+        /// <summary>
+        /// The principal method used to encode a flat file
+        /// </summary>
+        /// <param name="componentEvents"></param>
+        /// <returns></returns>
         public bool Encode(IDTSComponentEvents componentEvents)
         {
             bool retVal = false;
@@ -193,14 +202,6 @@ namespace SSISEncodeFileTask100
                                 0,
                                 ref refire);
 
-                    //byte[] bytes;
-                    //using (FileStream openRead = File.OpenRead(_filePath))
-                    //{
-                    //    bytes = new byte[openRead.Length];
-                    //    openRead.Read(bytes, 0, (int)openRead.Length);
-                    //    openRead.Close();
-                    //}
-
                     Encoding destinationEncoding = Encoding.GetEncoding(_destinationEncoding);
 
                     componentEvents.FireInformation(0,
@@ -218,19 +219,6 @@ namespace SSISEncodeFileTask100
                         streamWriter.Flush();
                         streamWriter.Close();
                     }
-
-
-                    //byte[] decoded = Encoding.Convert(sourceEncoding,
-                    //                                  destinationEncoding,
-                    //                                  bytes,
-                    //                                  0,
-                    //                                  bytes.Length);
-
-                    //using (FileStream fileStream = new FileStream(_filePath, FileMode.OpenOrCreate))
-                    //{
-                    //    fileStream.Write(decoded, 0, decoded.Length);
-                    //    fileStream.Close();
-                    //}
                 }
 
                 retVal = true;
@@ -242,49 +230,6 @@ namespace SSISEncodeFileTask100
                                        string.Format("Error in Encode function:{0} {1} {2}", exception.Message, exception.Source, exception.StackTrace),
                                        string.Empty,
                                        0);
-            }
-            return retVal;
-        }
-
-        public bool Encode()
-        {
-            bool retVal = false;
-            bool refFire = false;
-            try
-            {
-                lock (lockObject)
-                {
-                    Encoding sourceEncoding;
-                    using (StreamReader sourceEncodingRead = new StreamReader(_filePath, true))
-                    {
-                        sourceEncoding = sourceEncodingRead.CurrentEncoding;
-                        sourceEncodingRead.Close();
-                    }
-
-                    byte[] bytes;
-                    using (FileStream openRead = File.OpenRead(_filePath))
-                    {
-                        bytes = new byte[openRead.Length];
-                        openRead.Read(bytes, 0, (int)openRead.Length);
-                        openRead.Close();
-                    }
-
-                    Encoding destinationEncoding = Encoding.GetEncoding(_destinationEncoding);
-
-                    byte[] decoded = Encoding.Convert(sourceEncoding, destinationEncoding, bytes, 0, bytes.Length);
-
-                    using (FileStream openWrite = File.OpenWrite(_filePath))
-                    {
-                        openWrite.Write(decoded, 0, decoded.Length);
-                        openWrite.Close();
-                    }
-                }
-
-                retVal = true;
-            }
-            catch
-            {
-                retVal = false;
             }
             return retVal;
         }

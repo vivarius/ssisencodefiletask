@@ -47,13 +47,13 @@ namespace SSISEncodeFileTask100.SSIS
         #region Private Properties
 
         Variables _vars = null;
-        private string _FilePath = string.Empty;
+
         #endregion
 
         #region Validate
 
         /// <summary>
-        /// Validate local parameters
+        /// Validate properties
         /// </summary>
         public override DTSExecResult Validate(Connections connections, VariableDispenser variableDispenser,
                                                IDTSComponentEvents componentEvents, IDTSLogging log)
@@ -115,7 +115,8 @@ namespace SSISEncodeFileTask100.SSIS
         {
             bool refire = false;
 
-            GetNeededVariables(variableDispenser, FileSourceFile);
+            if (!string.IsNullOrEmpty(FileSourceFile))
+                GetNeededVariables(variableDispenser, FileSourceFile);
 
             componentEvents.FireInformation(0,
                                             "SSISEncodeFileTask",
@@ -161,6 +162,13 @@ namespace SSISEncodeFileTask100.SSIS
             return base.Execute(connections, variableDispenser, componentEvents, log, transaction);
         }
 
+        /// <summary>
+        /// Method use to encode the flat file
+        /// </summary>
+        /// <param name="connections"></param>
+        /// <param name="variableDispenser"></param>
+        /// <param name="componentEvents"></param>
+        /// <returns></returns>
         private bool EncodeFile(Connections connections, VariableDispenser variableDispenser, IDTSComponentEvents componentEvents)
         {
             bool retval = false;
@@ -217,6 +225,11 @@ namespace SSISEncodeFileTask100.SSIS
             return variableObject;
         }
 
+        /// <summary>
+        /// Unlock the "File Path Variable" variable
+        /// </summary>
+        /// <param name="variableDispenser"></param>
+        /// <param name="variableExpression"></param>
         private void GetNeededVariables(VariableDispenser variableDispenser, string variableExpression)
         {
             try
@@ -241,6 +254,11 @@ namespace SSISEncodeFileTask100.SSIS
 
         #region Implementation of IDTSComponentPersist
 
+        /// <summary>
+        /// Save task's properties into the internal serializing xml model
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="infoEvents"></param>
         void IDTSComponentPersist.SaveToXML(XmlDocument doc, IDTSInfoEvents infoEvents)
         {
             XmlElement taskElement = doc.CreateElement(string.Empty, "SSISEncodeFileTask", string.Empty);
@@ -265,6 +283,11 @@ namespace SSISEncodeFileTask100.SSIS
             doc.AppendChild(taskElement);
         }
 
+        /// <summary>
+        /// Load properties from the internal serializing xml model
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="infoEvents"></param>
         void IDTSComponentPersist.LoadFromXML(XmlElement node, IDTSInfoEvents infoEvents)
         {
             if (node.Name != "SSISEncodeFileTask")

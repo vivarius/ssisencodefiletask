@@ -14,10 +14,6 @@ namespace SSISEncodeFileTask100
         #endregion
 
         #region Public Properties
-        private Variables Variables
-        {
-            get { return _taskHost.Variables; }
-        }
 
         private Connections Connections
         {
@@ -27,6 +23,11 @@ namespace SSISEncodeFileTask100
         #endregion
 
         #region .ctor
+        /// <summary>
+        /// Initialize form
+        /// </summary>
+        /// <param name="taskHost"></param>
+        /// <param name="connections"></param>
         public frmEditProperties(TaskHost taskHost, Connections connections)
         {
             InitializeComponent();
@@ -75,6 +76,9 @@ namespace SSISEncodeFileTask100
 
         #region Methods
 
+        /// <summary>
+        /// Obtain the list  of File Type connectors
+        /// </summary>
         private void LoadFileConnections()
         {
             foreach (var connection in Connections.Cast<ConnectionManager>().Where(connection => connection.CreationName == "FILE"))
@@ -83,6 +87,9 @@ namespace SSISEncodeFileTask100
             }
         }
 
+        /// <summary>
+        /// Load encoding types -> FileEncodingTools.cs // FileEncodingTools class
+        /// </summary>
         private void LoadEncodingTypes()
         {
             foreach (var listItem in FileEncodingTools.EncodingList)
@@ -94,6 +101,11 @@ namespace SSISEncodeFileTask100
         #endregion
 
         #region Events
+        /// <summary>
+        /// Expression bulder handlig to obtain an expression
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btExpressionSource_Click(object sender, EventArgs e)
         {
             using (ExpressionBuilder expressionBuilder = ExpressionBuilder.Instantiate(_taskHost.Variables, _taskHost.VariableDispenser, typeof(string), txSourceFile.Text))
@@ -105,6 +117,11 @@ namespace SSISEncodeFileTask100
             }
         }
 
+        /// <summary>
+        /// Save the interface's controls values 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btSave_Click(object sender, EventArgs e)
         {
             _taskHost.Properties[NamedStringMembers.FILE_CONNECTOR].SetValue(_taskHost, cmbFile.Text);
