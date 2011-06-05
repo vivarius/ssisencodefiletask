@@ -44,11 +44,11 @@ namespace SSISEncodeFileTask100
             {
                 LoadFileConnections();
                 LoadEncodingTypes();
-                cmbFile.SelectedIndex = cmbFile.FindString(_taskHost.Properties[NamedStringMembers.FILE_CONNECTOR].GetValue(_taskHost).ToString());
+                cmbFile.SelectedIndex = cmbFile.FindString(_taskHost.Properties[Keys.FILE_CONNECTOR].GetValue(_taskHost).ToString());
 
                 string selectedEncodingType = string.Empty;
 
-                foreach (var item in cmbEncoding.Items.Cast<object>().Where(item => ((ComboBoxObjectComboItem)item).ValueMemeber.ToString() == _taskHost.Properties[NamedStringMembers.EncodingType].GetValue(_taskHost).ToString()))
+                foreach (var item in cmbEncoding.Items.Cast<object>().Where(item => ((ComboBoxObjectComboItem)item).ValueMemeber.ToString() == _taskHost.Properties[Keys.EncodingType].GetValue(_taskHost).ToString()))
                 {
                     selectedEncodingType = ((ComboBoxObjectComboItem)item).DisplayMember.ToString();
                     break;
@@ -56,8 +56,8 @@ namespace SSISEncodeFileTask100
 
                 cmbEncoding.SelectedIndex = (cmbEncoding.FindString(selectedEncodingType));
 
-                txSourceFile.Text = _taskHost.Properties[NamedStringMembers.FileSourceFile].GetValue(_taskHost).ToString();
-                if (_taskHost.Properties[NamedStringMembers.SourceType].GetValue(_taskHost).ToString() == SourceFileType.FromFileConnector.ToString())
+                txSourceFile.Text = _taskHost.Properties[Keys.FileSourceFile].GetValue(_taskHost).ToString();
+                if (_taskHost.Properties[Keys.SourceType].GetValue(_taskHost).ToString() == SourceFileType.FromFileConnector.ToString())
                 {
                     opFileConnector.Checked = true;
                 }
@@ -66,6 +66,7 @@ namespace SSISEncodeFileTask100
                     opFilePath.Checked = true;
                 }
 
+                Switcher();
             }
             catch (Exception)
             {
@@ -98,6 +99,26 @@ namespace SSISEncodeFileTask100
             }
         }
 
+        private void Switcher()
+        {
+            if (opFileConnector.Checked)
+            {
+                lbFilePath.Enabled = false;
+                txSourceFile.Enabled = false;
+                btExpressionSource.Enabled = false;
+                lbFileConnection.Enabled = true;
+                cmbFile.Enabled = true;
+            }
+
+            if (opFilePath.Checked)
+            {
+                lbFilePath.Enabled = true;
+                txSourceFile.Enabled = true;
+                btExpressionSource.Enabled = true;
+                lbFileConnection.Enabled = false;
+                cmbFile.Enabled = false;
+            }
+        }
         #endregion
 
         #region Events
@@ -124,14 +145,29 @@ namespace SSISEncodeFileTask100
         /// <param name="e"></param>
         private void btSave_Click(object sender, EventArgs e)
         {
-            _taskHost.Properties[NamedStringMembers.FILE_CONNECTOR].SetValue(_taskHost, cmbFile.Text);
-            _taskHost.Properties[NamedStringMembers.FileSourceFile].SetValue(_taskHost, txSourceFile.Text);
-            _taskHost.Properties[NamedStringMembers.EncodingType].SetValue(_taskHost, ((ComboBoxObjectComboItem)cmbEncoding.SelectedItem).ValueMemeber);
-            _taskHost.Properties[NamedStringMembers.SourceType].SetValue(_taskHost, (opFileConnector.Checked)
+            _taskHost.Properties[Keys.FILE_CONNECTOR].SetValue(_taskHost, cmbFile.Text);
+            _taskHost.Properties[Keys.FileSourceFile].SetValue(_taskHost, txSourceFile.Text);
+            _taskHost.Properties[Keys.EncodingType].SetValue(_taskHost, ((ComboBoxObjectComboItem)cmbEncoding.SelectedItem).ValueMemeber);
+            _taskHost.Properties[Keys.SourceType].SetValue(_taskHost, (opFileConnector.Checked)
                                                                                         ? SourceFileType.FromFileConnector.ToString()
                                                                                         : SourceFileType.FromFilePath.ToString());
             DialogResult = DialogResult.OK;
             Close();
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(linkLabel1.Text);
+        }
+
+        private void opFileConnector_Click(object sender, EventArgs e)
+        {
+            Switcher();
+        }
+
+        private void opFilePath_Click(object sender, EventArgs e)
+        {
+            Switcher();
         }
         #endregion
     }

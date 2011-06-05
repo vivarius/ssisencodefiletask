@@ -9,9 +9,9 @@ namespace SSISEncodeFileTask100
     class FileEncodingTools
     {
         #region Private fields
-        private string _filePath;
-        private int _destinationEncoding;
-        private static object lockObject = new object();
+        private readonly string _filePath;
+        private readonly int _destinationEncoding;
+        private static readonly object lockObject = new object();
         #endregion
 
         #region Encoding List
@@ -188,7 +188,7 @@ namespace SSISEncodeFileTask100
                 {
                     Encoding sourceEncoding;
                     string sourceText;
-                    using (StreamReader reader = new StreamReader(_filePath, true))
+                    using (var reader = new StreamReader(_filePath, true))
                     {
                         sourceEncoding = reader.CurrentEncoding;
                         sourceText = reader.ReadToEnd();
@@ -213,7 +213,7 @@ namespace SSISEncodeFileTask100
 
                     File.Delete(_filePath);
 
-                    using (StreamWriter streamWriter = new StreamWriter(_filePath, true, destinationEncoding))
+                    using (var streamWriter = new StreamWriter(_filePath, true, destinationEncoding))
                     {
                         streamWriter.Write(sourceText);
                         streamWriter.Flush();
