@@ -44,34 +44,46 @@ namespace SSISEncodeFileTask100
             {
                 LoadFileConnections();
                 LoadEncodingTypes();
-                cmbFile.SelectedIndex = cmbFile.FindString(_taskHost.Properties[Keys.FILE_CONNECTOR].GetValue(_taskHost).ToString());
+
+                if (_taskHost.Properties[Keys.FILE_CONNECTOR].GetValue(_taskHost) != null)
+                    cmbFile.SelectedIndex = cmbFile.FindString(_taskHost.Properties[Keys.FILE_CONNECTOR].GetValue(_taskHost).ToString());
 
                 string selectedEncodingType = string.Empty;
 
-                foreach (var item in cmbEncoding.Items.Cast<object>().Where(item => ((ComboBoxObjectComboItem)item).ValueMemeber.ToString() == _taskHost.Properties[Keys.EncodingType].GetValue(_taskHost).ToString()))
-                {
-                    selectedEncodingType = ((ComboBoxObjectComboItem)item).DisplayMember.ToString();
-                    break;
-                }
+                if (_taskHost.Properties[Keys.EncodingType].GetValue(_taskHost) != null)
+                    foreach (var item in cmbEncoding.Items.Cast<object>().Where(item => ((ComboBoxObjectComboItem)item).ValueMemeber.ToString() == _taskHost.Properties[Keys.EncodingType].GetValue(_taskHost).ToString()))
+                    {
+                        selectedEncodingType = ((ComboBoxObjectComboItem)item).DisplayMember.ToString();
+                        break;
+                    }
 
                 cmbEncoding.SelectedIndex = (cmbEncoding.FindString(selectedEncodingType));
 
-                txSourceFile.Text = _taskHost.Properties[Keys.FileSourceFile].GetValue(_taskHost).ToString();
-                if (_taskHost.Properties[Keys.SourceType].GetValue(_taskHost).ToString() == SourceFileType.FromFileConnector.ToString())
-                {
-                    opFileConnector.Checked = true;
-                }
-                else
-                {
-                    opFilePath.Checked = true;
-                }
+                if (_taskHost.Properties[Keys.FileSourcePathInVariable].GetValue(_taskHost) != null)
+                    txSourceFile.Text = _taskHost.Properties[Keys.FileSourcePathInVariable].GetValue(_taskHost).ToString();
 
-                Switcher();
+                if (_taskHost.Properties[Keys.SourceType].GetValue(_taskHost) != null)
+                {
+                    if (_taskHost.Properties[Keys.SourceType].GetValue(_taskHost).ToString() ==
+                        SourceFileType.FromFileConnector.ToString())
+                    {
+                        opFileConnector.Checked = true;
+                    }
+                    else
+                    {
+                        opFilePath.Checked = true;
+                    }
+                }
             }
             catch (Exception)
             {
 
             }
+            finally
+            {
+                Switcher();
+            }
+
         }
         #endregion
 
@@ -146,7 +158,7 @@ namespace SSISEncodeFileTask100
         private void btSave_Click(object sender, EventArgs e)
         {
             _taskHost.Properties[Keys.FILE_CONNECTOR].SetValue(_taskHost, cmbFile.Text);
-            _taskHost.Properties[Keys.FileSourceFile].SetValue(_taskHost, txSourceFile.Text);
+            _taskHost.Properties[Keys.FileSourcePathInVariable].SetValue(_taskHost, txSourceFile.Text);
             _taskHost.Properties[Keys.EncodingType].SetValue(_taskHost, ((ComboBoxObjectComboItem)cmbEncoding.SelectedItem).ValueMemeber);
             _taskHost.Properties[Keys.SourceType].SetValue(_taskHost, (opFileConnector.Checked)
                                                                                         ? SourceFileType.FromFileConnector.ToString()

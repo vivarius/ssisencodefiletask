@@ -110,6 +110,7 @@
             // opFileConnector
             // 
             this.opFileConnector.AutoSize = true;
+            this.opFileConnector.Checked = true;
             this.opFileConnector.Location = new System.Drawing.Point(11, 15);
             this.opFileConnector.Name = "opFileConnector";
             this.opFileConnector.Size = new System.Drawing.Size(242, 17);
@@ -126,7 +127,6 @@
             this.opFilePath.Name = "opFilePath";
             this.opFilePath.Size = new System.Drawing.Size(212, 17);
             this.opFilePath.TabIndex = 14;
-            this.opFilePath.TabStop = true;
             this.opFilePath.Text = "The target path is a variable/expression";
             this.opFilePath.UseVisualStyleBackColor = true;
             this.opFilePath.Click += new System.EventHandler(this.opFilePath_Click);

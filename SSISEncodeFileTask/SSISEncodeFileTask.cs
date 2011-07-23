@@ -13,7 +13,7 @@ namespace SSISEncodeFileTask100.SSIS
         DisplayName = "Encoding File Task",
         UITypeName = "SSISEncodeFileTask100.SSISEncodeFileTaskUIInterface" +
         ",SSISEncodeFileTask100," +
-        "Version=1.1.0.1," +
+        "Version=1.1.0.5," +
         "Culture=Neutral," +
         "PublicKeyToken=236ec97d37527d44",
         IconResource = "SSISEncodeFileTask100.FileEncodeIcon.ico",
@@ -34,10 +34,10 @@ namespace SSISEncodeFileTask100.SSIS
         [Category("Component specifics"), Description("The File connector")]
         public string FileConnector { get; set; }
         [Category("Component specifics"), Description("Source File Path")]
-        public string FileSourceFile { get; set; }
-        [Category("Component specifics"), Description("source Type")]
+        public string FileSourcePathInVariable { get; set; }
+        [Category("Component specifics"), Description("Source Type")]
         public string SourceType { get; set; }
-        [Category("Component specifics"), Description("Encoding Type")]
+        [Category("Component specifics"), Description("Encoding")]
         public string EncodingType { get; set; }
         #endregion
 
@@ -85,7 +85,7 @@ namespace SSISEncodeFileTask100.SSIS
             }
             else
             {
-                if (string.IsNullOrEmpty(FileSourceFile))
+                if (string.IsNullOrEmpty(FileSourcePathInVariable))
                 {
                     componentEvents.FireError(0, "SSISEncodeFileTask", "A file path is required.", "", 0);
                     isBaseValid = false;
@@ -120,12 +120,12 @@ namespace SSISEncodeFileTask100.SSIS
                                                 ref refire);
 
 
-            if (!string.IsNullOrEmpty(FileSourceFile))
-                GetNeededVariables(variableDispenser, FileSourceFile);
+            if (!string.IsNullOrEmpty(FileSourcePathInVariable))
+                GetNeededVariables(variableDispenser, FileSourcePathInVariable);
 
             componentEvents.FireInformation(0,
                                             "SSISEncodeFileTask",
-                                            string.Format("Source File: \"{0}\"", EvaluateExpression(FileSourceFile, variableDispenser)),
+                                            string.Format("Source File: \"{0}\"", EvaluateExpression(FileSourcePathInVariable, variableDispenser)),
                                             string.Empty,
                                             0,
                                             ref refire);
@@ -145,10 +145,12 @@ namespace SSISEncodeFileTask100.SSIS
             catch (Exception ex)
             {
                 componentEvents.FireError(0,
-                                          "SSISAssemblyTask",
+                                          "SSISEncodeFileTask",
                                           string.Format("Problem: {0}", ex.Message),
                                           string.Empty,
                                           0);
+
+                return DTSExecResult.Failure;
             }
             finally
             {
@@ -172,11 +174,12 @@ namespace SSISEncodeFileTask100.SSIS
         {
             bool retval = false;
             bool refire = false;
+
             try
             {
                 string filePath = SourceType == SourceFileType.FromFileConnector.ToString()
                                         ? connections[FileConnector].ConnectionString
-                                        : EvaluateExpression(FileSourceFile, variableDispenser).ToString();
+                                        : EvaluateExpression(FileSourcePathInVariable, variableDispenser).ToString();
 
                 componentEvents.FireInformation(0,
                                                 "SSISEncodeFileTask",
@@ -192,13 +195,12 @@ namespace SSISEncodeFileTask100.SSIS
             {
                 componentEvents.FireError(0,
                                         "SSISEncodeFileTask",
-                                        string.Format("Error :{0} {1} {2}", exception.Message, exception.Source, exception.StackTrace),
+                                        string.Format("EncodeFile Error :{0} {1} {2}", exception.Message, exception.Source, exception.StackTrace),
                                         string.Empty,
                                         0);
             }
 
             return retval;
-
         }
 
         #endregion
@@ -271,8 +273,8 @@ namespace SSISEncodeFileTask100.SSIS
             XmlAttribute fileConnector = doc.CreateAttribute(string.Empty, Keys.FILE_CONNECTOR, string.Empty);
             fileConnector.Value = FileConnector;
 
-            XmlAttribute fileSourceFile = doc.CreateAttribute(string.Empty, Keys.FileSourceFile, string.Empty);
-            fileSourceFile.Value = FileSourceFile;
+            XmlAttribute fileSourceFile = doc.CreateAttribute(string.Empty, Keys.FileSourcePathInVariable, string.Empty);
+            fileSourceFile.Value = FileSourcePathInVariable;
 
             XmlAttribute sourceType = doc.CreateAttribute(string.Empty, Keys.SourceType, string.Empty);
             sourceType.Value = SourceType;
@@ -303,7 +305,7 @@ namespace SSISEncodeFileTask100.SSIS
             try
             {
                 FileConnector = node.Attributes.GetNamedItem(Keys.FILE_CONNECTOR).Value;
-                FileSourceFile = node.Attributes.GetNamedItem(Keys.FileSourceFile).Value;
+                FileSourcePathInVariable = node.Attributes.GetNamedItem(Keys.FileSourcePathInVariable).Value;
                 SourceType = node.Attributes.GetNamedItem(Keys.SourceType).Value;
                 EncodingType = node.Attributes.GetNamedItem(Keys.EncodingType).Value;
             }
