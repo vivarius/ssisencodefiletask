@@ -80,7 +80,7 @@
     <None Include="SSISEncodeFileTask.snk" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="FileEncodeIcon.ico" />
+    <EmbeddedResource Include="FileEncodeIcon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -13,7 +13,7 @@ namespace SSISEncodeFileTask100.SSIS
         DisplayName = "Encoding File Task",
         UITypeName = "SSISEncodeFileTask100.SSISEncodeFileTaskUIInterface" +
         ",SSISEncodeFileTask100," +
-        "Version=1.1.0.5," +
+        "Version=1.2.0.0," +
         "Culture=Neutral," +
         "PublicKeyToken=236ec97d37527d44",
         IconResource = "SSISEncodeFileTask100.FileEncodeIcon.ico",
