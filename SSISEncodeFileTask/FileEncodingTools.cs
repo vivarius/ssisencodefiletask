@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Transactions;
 using Microsoft.SqlServer.Dts.Runtime;
@@ -12,7 +13,10 @@ namespace SSISEncodeFileTask100
         #region Private fields
         private readonly string _filePath;
         private readonly int _destinationEncoding;
+        private readonly bool _autoDetectEncoding = false;
+        private readonly int _sourceEncoding;
         private static readonly object LockObject = new object();
+        readonly int _bufferSize = 1024;
         #endregion
 
         #region Encoding List
@@ -165,17 +169,27 @@ namespace SSISEncodeFileTask100
         #endregion
 
         #region .ctor
-        
+
         public FileEncodingTools(string filePath, int destinationEncoding)
         {
             _filePath = filePath;
             _destinationEncoding = destinationEncoding;
         }
+
+        public FileEncodingTools(string filePath, int destinationEncoding, bool autoDetectEncoding, int sourceEncoding, int readWriteBuffer)
+        {
+            _filePath = filePath;
+            _destinationEncoding = destinationEncoding;
+            _autoDetectEncoding = autoDetectEncoding;
+            _sourceEncoding = sourceEncoding;
+            _bufferSize = readWriteBuffer;
+        }
+
         #endregion
 
         #region Methods
         /// <summary>
-        /// The principal method used to encode a file
+        /// The main method used to encode a file
         /// </summary>
         /// <param name="componentEvents"></param>
         /// <returns></returns>
@@ -183,10 +197,18 @@ namespace SSISEncodeFileTask100
         {
             bool retVal = false;
             bool refire = false;
-            const int bufferSize = 1024;
 
             try
             {
+
+                componentEvents.FireInformation(0,
+                                                "SSISEncodeFileTask",
+                                                string.Format("Tha value of ReadWriteBuffer: {0} ", _bufferSize),
+                                                string.Empty,
+                                                0,
+                                                ref refire);
+                if (_bufferSize < 1)
+                    throw new Exception("The ReadWriteBuffer cannot be less than 1");
 
                 lock (LockObject)
                 {
@@ -194,47 +216,55 @@ namespace SSISEncodeFileTask100
                     {
                         var fileInfo = new FileInfo(_filePath);
                         string tempPath = string.Format(@"{0}\{1}", Path.GetTempPath(), fileInfo.Name);
+                        Encoding destinationEncoding = Encoding.GetEncoding(_destinationEncoding);
+                        componentEvents.FireInformation(0,
+                                                        "SSISEncodeFileTask",
+                                                        string.Format("Destination encoding: {0} - {1}", destinationEncoding.CodePage, destinationEncoding.EncodingName),
+                                                        string.Empty,
+                                                        0,
+                                                        ref refire);
 
                         using (var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read))
                         {
-                            using (var streamReader = new StreamReader(fileStream))
+                            Encoding sourceEncoding;
+                            if (_autoDetectEncoding)
                             {
-                                Encoding sourceEncoding = streamReader.CurrentEncoding;
+                                sourceEncoding = new StreamReader(fileStream).CurrentEncoding;
 
                                 componentEvents.FireInformation(0,
                                                                 "SSISEncodeFileTask",
-                                                                string.Format(
-                                                                    "File to encode {0} from current encoding {1} - {2}",
-                                                                    _filePath, sourceEncoding.CodePage,
-                                                                    sourceEncoding.EncodingName),
+                                                                string.Format("File to encode {0} from auto-detected encoding [{1} - {2}]", _filePath, sourceEncoding.CodePage, sourceEncoding.EncodingName),
                                                                 string.Empty,
                                                                 0,
                                                                 ref refire);
 
-                                Encoding destinationEncoding = Encoding.GetEncoding(_destinationEncoding);
-
+                            }
+                            else
+                            {
+                                sourceEncoding = Encoding.GetEncoding(_sourceEncoding);
                                 componentEvents.FireInformation(0,
-                                                                "SSISEncodeFileTask",
-                                                                string.Format("Destination encoding: {0} - {1}",
-                                                                              destinationEncoding.CodePage,
-                                                                              destinationEncoding.EncodingName),
-                                                                string.Empty,
-                                                                0,
-                                                                ref refire);
+                                                                    "SSISEncodeFileTask",
+                                                                    string.Format("File to encode {0} from specified encoding [{1} - {2}]", _filePath, sourceEncoding.CodePage, sourceEncoding.EncodingName),
+                                                                    string.Empty,
+                                                                    0,
+                                                                    ref refire);
+                            }
 
-                                var fileContent = new char[bufferSize];
-                                int charsRead = streamReader.Read(fileContent, 0, bufferSize);
+                            if (File.Exists(tempPath))
+                                File.Delete(tempPath);
 
-                                if (File.Exists(tempPath))
-                                    File.Delete(tempPath);
+                            using (var streamReader = new StreamReader(fileStream, sourceEncoding))
+                            {
+                                var fileContent = new char[_bufferSize];
+                                int charsRead = streamReader.Read(fileContent, 0, _bufferSize);
 
                                 using (var streamWriter = new StreamWriter(tempPath, false, destinationEncoding))
                                 {
                                     while (charsRead > 0)
                                     {
-                                        streamWriter.Write(fileContent);
-                                        fileContent = new char[bufferSize];
-                                        charsRead = streamReader.Read(fileContent, 0, bufferSize);
+                                        streamWriter.Write(fileContent, 0, RemovingChar(fileContent, '\0').Count());
+                                        fileContent = new char[_bufferSize];
+                                        charsRead = streamReader.Read(fileContent, 0, _bufferSize);
                                     }
 
                                     streamWriter.Close();
@@ -260,12 +290,17 @@ namespace SSISEncodeFileTask100
             {
                 componentEvents.FireError(0,
                                        "SSISEncodeFileTask",
-                                       string.Format("Encoding Error :{0} {1} {2}", exception.Message, exception.Source, exception.StackTrace),
+                                       string.Format("Encoding Error :{0}", exception.Message),
                                        string.Empty,
                                        0);
             }
 
             return retVal;
+        }
+
+        public IEnumerable<char> RemovingChar(IEnumerable<char> sourceCharArray, char removingChar)
+        {
+            return sourceCharArray.Where(c => c != removingChar);
         }
 
         #endregion

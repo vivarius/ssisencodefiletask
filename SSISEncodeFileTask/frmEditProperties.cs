@@ -64,16 +64,41 @@ namespace SSISEncodeFileTask100
 
                 if (_taskHost.Properties[Keys.SourceType].GetValue(_taskHost) != null)
                 {
-                    if (_taskHost.Properties[Keys.SourceType].GetValue(_taskHost).ToString() ==
-                        SourceFileType.FromFileConnector.ToString())
-                    {
+                    if (_taskHost.Properties[Keys.SourceType].GetValue(_taskHost).ToString() == SourceFileType.FromFileConnector.ToString())
                         opFileConnector.Checked = true;
+                    else
+                        opFilePath.Checked = true;
+                }
+
+                if (_taskHost.Properties[Keys.AutodetectSourceEncodingType].GetValue(_taskHost) != null)
+                {
+                    chkAutodetectEncoding.Checked = (bool)_taskHost.Properties[Keys.AutodetectSourceEncodingType].GetValue(_taskHost);
+                    cmbEncodingSource.Enabled = !chkAutodetectEncoding.Checked;
+
+                    if (_taskHost.Properties[Keys.SourceEncodingType].GetValue(_taskHost) != null)
+                    {
+                        foreach (var item in cmbEncodingSource.Items.Cast<object>().Where(item => ((ComboBoxObjectComboItem)item).ValueMemeber.ToString() == _taskHost.Properties[Keys.SourceEncodingType].GetValue(_taskHost).ToString()))
+                        {
+                            selectedEncodingType = ((ComboBoxObjectComboItem)item).DisplayMember.ToString();
+                            break;
+                        }
+
+                        cmbEncodingSource.SelectedIndex = (cmbEncodingSource.FindString(selectedEncodingType));
                     }
                     else
                     {
-                        opFilePath.Checked = true;
+                        cmbEncodingSource.SelectedIndex = -1;
                     }
                 }
+                else
+                {
+                    chkAutodetectEncoding.Checked = true;
+                    cmbEncodingSource.Enabled = false;
+                }
+
+                txReadWriteBuffer.Text = _taskHost.Properties[Keys.ReadWriteBuffer].GetValue(_taskHost) != null
+                                            ? _taskHost.Properties[Keys.ReadWriteBuffer].GetValue(_taskHost).ToString()
+                                            : "1024";
             }
             catch (Exception)
             {
@@ -105,9 +130,10 @@ namespace SSISEncodeFileTask100
         /// </summary>
         private void LoadEncodingTypes()
         {
-            foreach (var listItem in FileEncodingTools.EncodingList)
+            foreach (var comboBoxItem in FileEncodingTools.EncodingList.Select(listItem => new ComboBoxObjectComboItem(listItem[0], string.Format("{0} - {1}", listItem[1], listItem[2]))))
             {
-                cmbEncoding.Items.Add(new ComboBoxObjectComboItem(listItem[0], string.Format("{0} - {1}", listItem[1], listItem[2])));
+                cmbEncoding.Items.Add(comboBoxItem);
+                cmbEncodingSource.Items.Add(comboBoxItem);
             }
         }
 
@@ -157,19 +183,35 @@ namespace SSISEncodeFileTask100
         /// <param name="e"></param>
         private void btSave_Click(object sender, EventArgs e)
         {
+            int readWriteBuffer = 1024;
+            Int32.TryParse(txReadWriteBuffer.Text.Trim(), out readWriteBuffer);
+            _taskHost.Properties[Keys.ReadWriteBuffer].SetValue(_taskHost, readWriteBuffer);
+
+            _taskHost.Properties[Keys.EncodingType].SetValue(_taskHost, Convert.ToInt32(((ComboBoxObjectComboItem)cmbEncoding.SelectedItem).ValueMemeber.ToString()));
+
             _taskHost.Properties[Keys.FILE_CONNECTOR].SetValue(_taskHost, cmbFile.Text);
             _taskHost.Properties[Keys.FileSourcePathInVariable].SetValue(_taskHost, txSourceFile.Text);
-            _taskHost.Properties[Keys.EncodingType].SetValue(_taskHost, ((ComboBoxObjectComboItem)cmbEncoding.SelectedItem).ValueMemeber);
-            _taskHost.Properties[Keys.SourceType].SetValue(_taskHost, (opFileConnector.Checked)
-                                                                                        ? SourceFileType.FromFileConnector.ToString()
-                                                                                        : SourceFileType.FromFilePath.ToString());
+            _taskHost.Properties[Keys.EncodingType].SetValue(_taskHost, Convert.ToInt32(((ComboBoxObjectComboItem)cmbEncoding.SelectedItem).ValueMemeber.ToString()));
+            _taskHost.Properties[Keys.SourceType].SetValue(_taskHost, opFileConnector.Checked
+                                                                            ? SourceFileType.FromFileConnector.ToString()
+                                                                            : SourceFileType.FromFilePath.ToString());
+
+            _taskHost.Properties[Keys.AutodetectSourceEncodingType].SetValue(_taskHost, chkAutodetectEncoding.Checked);
+            _taskHost.Properties[Keys.SourceEncodingType].SetValue(_taskHost, !chkAutodetectEncoding.Checked
+                                                                                    ? Convert.ToInt32(((ComboBoxObjectComboItem)cmbEncodingSource.SelectedItem).ValueMemeber.ToString())
+                                                                                    : 1);
+
             DialogResult = DialogResult.OK;
             Close();
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start(linkLabel1.Text);
+            try
+            {
+                System.Diagnostics.Process.Start(linkLabel1.Text);
+            }
+            catch { }
         }
 
         private void opFileConnector_Click(object sender, EventArgs e)
@@ -181,6 +223,14 @@ namespace SSISEncodeFileTask100
         {
             Switcher();
         }
+
+        private void chkAutodetectEncoding_Click(object sender, EventArgs e)
+        {
+            cmbEncodingSource.Enabled = !chkAutodetectEncoding.Checked;
+        }
+
         #endregion
+
+
     }
 }

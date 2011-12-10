@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmEditProperties));
             this.cmbFile = new System.Windows.Forms.ComboBox();
             this.lbFileConnection = new System.Windows.Forms.Label();
@@ -41,6 +42,11 @@
             this.cmbEncoding = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
+            this.chkAutodetectEncoding = new System.Windows.Forms.CheckBox();
+            this.cmbEncodingSource = new System.Windows.Forms.ComboBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.txReadWriteBuffer = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // cmbFile
@@ -79,7 +85,7 @@
             // 
             // btSave
             // 
-            this.btSave.Location = new System.Drawing.Point(331, 146);
+            this.btSave.Location = new System.Drawing.Point(332, 205);
             this.btSave.Name = "btSave";
             this.btSave.Size = new System.Drawing.Size(75, 36);
             this.btSave.TabIndex = 6;
@@ -90,7 +96,7 @@
             // btCancel
             // 
             this.btCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btCancel.Location = new System.Drawing.Point(412, 146);
+            this.btCancel.Location = new System.Drawing.Point(413, 205);
             this.btCancel.Name = "btCancel";
             this.btCancel.Size = new System.Drawing.Size(75, 36);
             this.btCancel.TabIndex = 7;
@@ -123,11 +129,11 @@
             // opFilePath
             // 
             this.opFilePath.AutoSize = true;
-            this.opFilePath.Location = new System.Drawing.Point(275, 15);
+            this.opFilePath.Location = new System.Drawing.Point(264, 15);
             this.opFilePath.Name = "opFilePath";
-            this.opFilePath.Size = new System.Drawing.Size(212, 17);
+            this.opFilePath.Size = new System.Drawing.Size(224, 17);
             this.opFilePath.TabIndex = 14;
-            this.opFilePath.Text = "The target path is a variable/expression";
+            this.opFilePath.Text = "The targeted path is a variable/expression";
             this.opFilePath.UseVisualStyleBackColor = true;
             this.opFilePath.Click += new System.EventHandler(this.opFilePath_Click);
             // 
@@ -135,7 +141,7 @@
             // 
             this.cmbEncoding.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbEncoding.FormattingEnabled = true;
-            this.cmbEncoding.Location = new System.Drawing.Point(152, 108);
+            this.cmbEncoding.Location = new System.Drawing.Point(152, 137);
             this.cmbEncoding.Name = "cmbEncoding";
             this.cmbEncoding.Size = new System.Drawing.Size(335, 21);
             this.cmbEncoding.TabIndex = 15;
@@ -143,7 +149,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(8, 111);
+            this.label1.Location = new System.Drawing.Point(8, 140);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(81, 13);
             this.label1.TabIndex = 16;
@@ -152,7 +158,7 @@
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(8, 169);
+            this.linkLabel1.Location = new System.Drawing.Point(9, 228);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(205, 13);
             this.linkLabel1.TabIndex = 17;
@@ -160,13 +166,58 @@
             this.linkLabel1.Text = "http//SSISEncodeFileTask.codeplex.com";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
+            // chkAutodetectEncoding
+            // 
+            this.chkAutodetectEncoding.AutoSize = true;
+            this.chkAutodetectEncoding.Checked = true;
+            this.chkAutodetectEncoding.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkAutodetectEncoding.Location = new System.Drawing.Point(11, 112);
+            this.chkAutodetectEncoding.Name = "chkAutodetectEncoding";
+            this.chkAutodetectEncoding.Size = new System.Drawing.Size(92, 17);
+            this.chkAutodetectEncoding.TabIndex = 18;
+            this.chkAutodetectEncoding.Text = "Autodetection";
+            this.toolTip1.SetToolTip(this.chkAutodetectEncoding, "Let the componennt to guess the original encoding type");
+            this.chkAutodetectEncoding.UseVisualStyleBackColor = true;
+            this.chkAutodetectEncoding.Click += new System.EventHandler(this.chkAutodetectEncoding_Click);
+            // 
+            // cmbEncodingSource
+            // 
+            this.cmbEncodingSource.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbEncodingSource.Enabled = false;
+            this.cmbEncodingSource.FormattingEnabled = true;
+            this.cmbEncodingSource.Location = new System.Drawing.Point(152, 110);
+            this.cmbEncodingSource.Name = "cmbEncodingSource";
+            this.cmbEncodingSource.Size = new System.Drawing.Size(335, 21);
+            this.cmbEncodingSource.TabIndex = 19;
+            // 
+            // txReadWriteBuffer
+            // 
+            this.txReadWriteBuffer.Location = new System.Drawing.Point(152, 164);
+            this.txReadWriteBuffer.Name = "txReadWriteBuffer";
+            this.txReadWriteBuffer.Size = new System.Drawing.Size(335, 20);
+            this.txReadWriteBuffer.TabIndex = 20;
+            this.txReadWriteBuffer.Text = "1024";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(8, 167);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(89, 13);
+            this.label2.TabIndex = 21;
+            this.label2.Text = "ReadWrite Buffer";
+            // 
             // frmEditProperties
             // 
             this.AcceptButton = this.btSave;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btCancel;
-            this.ClientSize = new System.Drawing.Size(499, 194);
+            this.ClientSize = new System.Drawing.Size(499, 252);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.txReadWriteBuffer);
+            this.Controls.Add(this.cmbEncodingSource);
+            this.Controls.Add(this.chkAutodetectEncoding);
             this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cmbEncoding);
@@ -205,5 +256,10 @@
         private System.Windows.Forms.ComboBox cmbEncoding;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.LinkLabel linkLabel1;
+        private System.Windows.Forms.CheckBox chkAutodetectEncoding;
+        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.ComboBox cmbEncodingSource;
+        private System.Windows.Forms.TextBox txReadWriteBuffer;
+        private System.Windows.Forms.Label label2;
     }
 }
